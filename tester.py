@@ -38,17 +38,18 @@ myTestRot = ar.Rots(nodes,edges);
 # One of these edge ends is easily distinguishable from all others
 # this makes the code easy to test for this particular graph.
 # Mix up the rotation system.
-np.random.seed()
-for i in range(0,100):
-    int1 = np.random.randint(0,6)
-    int2 = np.random.randint(0,6)
-    if not (int1 == int2):
-        myTestRot.swapVert(int1,int2)
-    int3 = np.random.randint(0,19)
-    int4 = np.random.randint(0,19)
-    if not (int3 == int4):
-        myTestRot.swapEdge(int3,int4)
-    int5 = np.random.randint(0,6)
-    int6 = np.random.randint(0,20)
-    myTestRot.rotRot(int5,int6)
+def randomize():
+    np.random.seed()
+    for i in range(0,100):
+        int1 = np.random.randint(0,6)
+        int2 = np.random.randint(0,6)
+        if not (int1 == int2):
+            myTestRot.swapVert(int1,int2)
+        int3 = np.random.randint(0,19)
+        int4 = np.random.randint(0,19)
+        if not (int3 == int4):
+            myTestRot.swapEdge(int3,int4)
+        int5 = np.random.randint(0,6)
+        int6 = np.random.randint(0,20)
+        myTestRot.rotRot(int5,int6)
 
