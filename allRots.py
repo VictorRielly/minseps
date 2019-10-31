@@ -149,7 +149,7 @@ class Rots(object):
         # Initialize the total number of edges to numEdges 
         self.numEdges = np.size(self.edges);
         self.numVertices = np.size(self.nodes);
-        lastKnownEdgeEnd = 0;
+        lastKnownEdgeEnd = -1;
         lastKnownVertex = 0;
         for i in range(0,self.numVertices):
             lastKnownEdgeEnd = self.relableEdgeEnds(lastKnownEdgeEnd,i)
