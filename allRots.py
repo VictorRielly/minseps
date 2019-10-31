@@ -15,10 +15,6 @@ from copy import deepcopy as copy
 
 class Rots(object):
     def __init__(self,*args):
-        if (len(args)>0):
-            self.nodes = args[0]
-        if (len(args)>1):
-            self.edges = args[1]
         # self.nodes is a list of vertices. Each vertex is an
         # array of edge ends in the order they appear at that
         # vertex
@@ -30,6 +26,10 @@ class Rots(object):
         # attached to that vertex. Edges are assumed to maintain
         # the form (x,y) with x, y vertices and x <= y.
         self.edges = [];
+        if (len(args)>0):
+            self.nodes = args[0]
+        if (len(args)>1):
+            self.edges = args[1]
 
     # This function will be used to rotate a rotation on
     # a single vertex this transformation of a rotation
