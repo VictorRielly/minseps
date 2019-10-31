@@ -15,9 +15,9 @@ from copy import deepcopy as copy
 
 class Rots(object):
     def __init__(self,*args):
-        if (args[0]):
+        if (len(args)>0):
             self.nodes = args[0]
-        if (args[1]):
+        if (len(args)>1):
             self.edges = args[1]
         # self.nodes is a list of vertices. Each vertex is an
         # array of edge ends in the order they appear at that
