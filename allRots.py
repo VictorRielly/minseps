@@ -34,6 +34,7 @@ class Rots(object):
     # This function will be used to rotate a rotation on
     # a single vertex this transformation of a rotation
     # system does not affect the self.edges member.
+    # This seems to work
     def rotRot(self,theRot,amount):
         amount = amount % np.size(self.nodes[theRot]);
         newRot = np.concatenate((self.nodes[theRot][amount:],self.nodes[theRot][:amount]));
@@ -41,7 +42,8 @@ class Rots(object):
 
     # This function will be used to swap two vetrices of a 
     # rotation. This transformation affects both the nodes
-    # and the edges members.
+    # and the edges members. This seems to work
+    # Need to test edge cases?
     def swapVert(self,firstVert,secondVert):
         temp = copy(self.edges)
         for i in range(0,np.size(self.nodes[firstVert])):
@@ -82,7 +84,8 @@ class Rots(object):
       
          
 
-    # This function swaps two edge labels
+    # This function swaps two edge labels. It seems to work
+    # Need to test edge cases?
     def swapEdge(self,firstEdge,secondEdge):
         tempNodes = copy(self.nodes)      
         tempEdge1 = copy(self.edges[secondEdge])
@@ -102,6 +105,33 @@ class Rots(object):
         self.nodes = tempNodes
         self.edges[firstEdge] = tempEdge1
         self.edges[secondEdge] = tempEdge2
+
+    # Ensures the labels of new edge ends in a vertex are increasing
+    # in order.
+    def relableEdgeEnds(self,lastKnownEdgeEnd,vertex):
+        for i in range(0,len(self.nodes[vertex])):
+            if self.nodes[vertex][i] > lastKnownEdgeEnd:
+                lastKnownEdgeEnd += 1;
+                self.swapEdge(self.nodes[vertex][i],lastKnownEdgeEnd)
+        return lastKnownEdgeEnd;
+
+    # Relabels vertices based on how they are connected to edge ends
+    # also rotates the vertices to make the connecting edge the first
+    # one.
+    def relableVertices(self,lastKnownVertex):
+        myVertex = lastKnownVertex;
+        for i in range(0,len(self.nodes[myVertex])):
+            # Assumes the second entry of each end corresponds
+            # to the largest vertex label
+            if self.edges[self.nodes[myVertex][i]][1] > lastKnownVertex:
+                lastKnownVertex += 1
+                # Rotate this newly found vertex so its first edge end
+                # is the one that discovered the vertex
+                indexofEdgeEnd = np.where(self.nodes[self.edges[self.nodes[myVertex][i]][1]] == self.nodes[myVertex][i])[0][0]; 
+                print(indexofEdgeEnd);
+                self.rotRot(self.edges[self.nodes[myVertex][i]][1],indexofEdgeEnd)
+                self.swapVert(self.edges[self.nodes[myVertex][i]][1],lastKnownVertex)
+        return lastKnownVertex;
    
 
     # This function will place the rotation system in 
@@ -116,139 +146,150 @@ class Rots(object):
         if edgeNum != 0:
             self.rotRot(0,edgeNum);
 
-        # Initialize the number of discovered edges to 1
+        # Initialize the total number of edges to numEdges 
         self.numEdges = np.size(self.edges);
+        self.numVertices = np.size(self.nodes);
+        lastKnownEdgeEnd = 0;
+        lastKnownVertex = 0;
+        for i in range(0,self.numVertices):
+            lastKnownEdgeEnd = self.relableEdgeEnds(lastKnownEdgeEnd,i)
+            lastKnownVertex = self.relableVertices(lastKnownVertex)
 
-        # Now, we reorder and relabel all of the edge ends
-        # and vertices based on the first vertex and edge end
-        # to do this, we need to keep track of the vertices
-        # as we discover them in a breadth first search and the
-        # edge ends as we discover them as well.
-        #vertices = np.zeros(len(self.nodes));
-        edges = []
-        vertices = []
-        #edges = np.zeros(self.numEdges);
-        # Push the first edge into edges
-        edges.append(0)
-        # Push the first vertex into vertices
-        vertices.append(0)
-      
-        # lastEdge set to -1 to start the loop.
-        lastEdge = -1; 
-        lastVertex = 0;
-        vertexOrder = 0;
-        currentEdge = 0;
-        currentVertex = 0;
-      
-        # test counter
-        counter = 0      
-        #while (currentEdge < self.numEdges):
-        # This code works for the base case, now we need
-        # to make it work for all cases in the while loop
-        while ((currentEdge > lastEdge or currentVertex > lastVertex)and counter < 2):
-            print(vertices);
-            print(edges);
-            print(self.nodes);
-            print(self.edges);
-            print("1 \n");
-            # Relables all of the edges so they read 0,1,2,... for the
-            # first vertex, and currentEdge, currentEdge+1, ... for
-            # the nth vertex. 
-#         for j in range(lastVertex,currentVertex+1):
-            print("The current Edge is:")
-            print(currentEdge)
-            lastEdge = currentEdge
-            for i in range(0,np.size(self.nodes[lastVertex])):
-                if currentEdge < self.nodes[lastVertex][i]:
-                    self.swapEdge(currentEdge,self.nodes[lastVertex][i])
-                    currentEdge += 1;
-                if currentEdge == self.nodes[lastVertex][i]:
-                    currentEdge += 1;
-            # We have overcounted by 1
-            currentEdge -= 1;
-#         newEdgeNum = currentEdge;
-#         for i in range(0,np.size(self.nodes[lastVertex])):
-#            if newEdgeNum < self.nodes[lastVertex][i]:
-#               newEdgeNum += 1
-#               self.swapEdge(newEdgeNum,self.nodes[lastVertex][i])         
-#            if newEdgeNum == self.nodes[lastVertex][i]:
-#               newEdgeNum += 1   
-            lastVertex = currentVertex
-            # Adds all the previously undiscovered edges in the
-            # current vertex to the list of edges
-#         for i in range(0,np.size(self.nodes[vertices[currentVertex]])):
-#            if not (self.nodes[vertices[currentVertex]][i] in edges[lastEdge:currentEdge+1]):
-#               edges.append(self.nodes[vertices[currentVertex]][i]);
-#               currentEdge += 1;
-            # Unnecessarily computationaly expensive, if all went right, we
-            # should just be able to append currentEdge:newEdgeNum.
-            for i in range(0,np.size(self.nodes[vertices[lastVertex]])):
-                if not (self.nodes[vertices[lastVertex]][i] in edges):
-                    edges.append(self.nodes[vertices[lastVertex]][i]);
+# I'm going to start over. Fresh start
 
-            # Now that we have added all the new edges to our list
-            # of edges, we are ready to add all the new vertices to the list
-            # list of vertices.
-            for i in range(lastEdge,currentEdge+1):
-                if not (self.edges[edges[i]][1] in vertices):
-                    vertices.append(self.edges[edges[i]][1]);
-                    currentVertex += 1;
-            print(vertices);
-            print(edges);
-            print(lastVertex);
-            print(currentVertex);
-            print(self.nodes);
-            print(self.edges);
-            print("2.5 \n");
-            # Now we need to swap the vertex labels so vertices
-            # reads 0,1,2,3,...
-            for i in range(vertexOrder,currentVertex+1):
-                if lastVertex < vertices[i]:
-                    self.swapVert(i, vertices[i]);
-                    # vertices is not a member of self and thus
-                    # the update of vertices is not handled by
-                    # self.swapVert
-                    # This is a deep copy in disguise since
-                    # vertices[i] is an integer. 
-                    temp = vertices[i]
-                    vertices[i] = i;
-                    # pretty inefficient as it is a nested loop
-                    # notice, we do not need to go from lastVertex
-                    # to end.
-                    for j in range(i+1,currentVertex+1):
-                        if vertices[j] == i:
-                            vertices[j] = temp;
 
-            # All vertices up to currentVertex have been reordered.
-            vertexOrder = currentVertex + 1;
+#        # Now, we reorder and relabel all of the edge ends
+#        # and vertices based on the first vertex and edge end
+#        # to do this, we need to keep track of the vertices
+#        # as we discover them in a breadth first search and the
+#        # edge ends as we discover them as well.
+#        #vertices = np.zeros(len(self.nodes));
+#        vertices = []
+#        #edges = np.zeros(self.numEdges);
+#        # Push the first edge into edges
+#        edges.append(0)
+#        # Push the first vertex into vertices
+#        vertices.append(0)
 
-            print(vertices);
-            print(edges);
-            print(lastVertex);
-            print(currentVertex);
-            print(self.nodes);
-            print(self.edges);
-            print("2 \n");
-            # Last, but not least, for all the new vertices, we
-            # rotate the vertex so the smallest edge is first.
-            for i in range(lastVertex,currentVertex+1):
-                # find the minimum edge
-                smallestInd = 0;
-                smallest = self.nodes[vertices[i]][0];
-                for j in range(0,np.size(self.nodes[vertices[i]])):
-                    if self.nodes[vertices[i]][j] < smallest:
-                        smallest = self.nodes[vertices[i]][j];
-                        smallestInd = j;
-                self.rotRot(vertices[i],smallestInd);
-            lastVertex += 1;
-            print(vertices);
-            print(edges);
-            print(lastVertex);
-            print(currentVertex);
-            print(self.nodes);
-            print(self.edges);
-            print("3 \n");
-#         counter += 1;
+
+#        # lastEdge set to -1 to start the loop.
+#        lastEdge = -1; 
+#        lastVertex = 0;
+#        vertexOrder = 0;
+#        currentEdge = 0;
+#        currentVertex = 0;
+#      
+#        # test counter
+#        counter = 0      
+#      
+#
+#        #while (currentEdge < self.numEdges):
+#        # This code works for the base case, now we need
+#        # to make it work for all cases in the while loop
+#        while ((currentEdge > lastEdge or currentVertex > lastVertex)and counter < 2):
+#            print(vertices);
+#            print(edges);
+#            print(self.nodes);
+#            print(self.edges);
+#            print("1 \n");
+#            # Relables all of the edges so they read 0,1,2,... for the
+#            # first vertex, and currentEdge, currentEdge+1, ... for
+#            # the nth vertex. 
+##         for j in range(lastVertex,currentVertex+1):
+#            print("The current Edge is:")
+#            print(currentEdge)
+#            lastEdge = currentEdge
+#            for i in range(0,np.size(self.nodes[lastVertex])):
+#                if currentEdge < self.nodes[lastVertex][i]:
+#                    self.swapEdge(currentEdge,self.nodes[lastVertex][i])
+#                    currentEdge += 1;
+#                if currentEdge == self.nodes[lastVertex][i]:
+#                    currentEdge += 1;
+#            # We have overcounted by 1
+#            currentEdge -= 1;
+##         newEdgeNum = currentEdge;
+##         for i in range(0,np.size(self.nodes[lastVertex])):
+##            if newEdgeNum < self.nodes[lastVertex][i]:
+##               newEdgeNum += 1
+##               self.swapEdge(newEdgeNum,self.nodes[lastVertex][i])         
+##            if newEdgeNum == self.nodes[lastVertex][i]:
+##               newEdgeNum += 1   
+#            lastVertex = currentVertex
+#            # Adds all the previously undiscovered edges in the
+#            # current vertex to the list of edges
+##         for i in range(0,np.size(self.nodes[vertices[currentVertex]])):
+##            if not (self.nodes[vertices[currentVertex]][i] in edges[lastEdge:currentEdge+1]):
+##               edges.append(self.nodes[vertices[currentVertex]][i]);
+##               currentEdge += 1;
+#            # Unnecessarily computationaly expensive, if all went right, we
+#            # should just be able to append currentEdge:newEdgeNum.
+#            for i in range(0,np.size(self.nodes[vertices[lastVertex]])):
+#                if not (self.nodes[vertices[lastVertex]][i] in edges):
+#                    edges.append(self.nodes[vertices[lastVertex]][i]);
+#
+#            # Now that we have added all the new edges to our list
+#            # of edges, we are ready to add all the new vertices to the list
+#            # list of vertices.
+#            for i in range(lastEdge,currentEdge+1):
+#                if not (self.edges[edges[i]][1] in vertices):
+#                    vertices.append(self.edges[edges[i]][1]);
+#                    currentVertex += 1;
+#            print(vertices);
+#            print(edges);
+#            print(lastVertex);
+#            print(currentVertex);
+#            print(self.nodes);
+#            print(self.edges);
+#            print("2.5 \n");
+#            # Now we need to swap the vertex labels so vertices
+#            # reads 0,1,2,3,...
+#            for i in range(vertexOrder,currentVertex+1):
+#                if lastVertex < vertices[i]:
+#                    self.swapVert(i, vertices[i]);
+#                    # vertices is not a member of self and thus
+#                    # the update of vertices is not handled by
+#                    # self.swapVert
+#                    # This is a deep copy in disguise since
+#                    # vertices[i] is an integer. 
+#                    temp = vertices[i]
+#                    vertices[i] = i;
+#                    # pretty inefficient as it is a nested loop
+#                    # notice, we do not need to go from lastVertex
+#                    # to end.
+#                    for j in range(i+1,currentVertex+1):
+#                        if vertices[j] == i:
+#                            vertices[j] = temp;
+#
+#            # All vertices up to currentVertex have been reordered.
+#            vertexOrder = currentVertex + 1;
+#
+#            print(vertices);
+#            print(edges);
+#            print(lastVertex);
+#            print(currentVertex);
+#            print(self.nodes);
+#            print(self.edges);
+#            print("2 \n");
+#            # Last, but not least, for all the new vertices, we
+#            # rotate the vertex so the smallest edge is first.
+#            for i in range(lastVertex,currentVertex+1):
+#                # find the minimum edge
+#                smallestInd = 0;
+#                smallest = self.nodes[vertices[i]][0];
+#                for j in range(0,np.size(self.nodes[vertices[i]])):
+#                    if self.nodes[vertices[i]][j] < smallest:
+#                        smallest = self.nodes[vertices[i]][j];
+#                        smallestInd = j;
+#                self.rotRot(vertices[i],smallestInd);
+#            lastVertex += 1;
+#            print(vertices);
+#            print(edges);
+#            print(lastVertex);
+#            print(currentVertex);
+#            print(self.nodes);
+#            print(self.edges);
+#            print("3 \n");
+##         counter += 1;
          
             
 
