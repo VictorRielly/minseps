@@ -14,11 +14,11 @@ from copy import deepcopy as copy
 # systems
 
 class Rots(object):
-    def __init__(self,arg*):
-        if (arg[0]):
-            self.nodes = arg[0]
-        if (arg[1]):
-            self.edges = arg[1]
+    def __init__(self,*args):
+        if (args[0]):
+            self.nodes = args[0]
+        if (args[1]):
+            self.edges = args[1]
         # self.nodes is a list of vertices. Each vertex is an
         # array of edge ends in the order they appear at that
         # vertex
