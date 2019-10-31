@@ -140,132 +140,126 @@ def redgaptogap(inputList):
 # possibilities. Nevertheless some of the rotation systems returned are
 # repeats.
 class AllRots(object):
-#	def __init__(self,flowerNum):
-        def __init__(*arg):
-                self = arg[0]
-                self.genus = ourGenus
-                if arg[1]:
-                   flowerNum = arg[1]
-                if arg[2]:
-                   self.genus = arg[2]
-		self.current = [0]*flowerNum;
-		self.current[0] = 1;
-		self.totalCount = 0;
-		self.flowerNum = flowerNum;
-		self.genusCalc = [0]*4*flowerNum;
-		self.minSorted = [];
-		for j in range(0, (flowerNum + 1)/2):
-			# This is going to be a smallest to largest gap 
-			# depth first search. So we will initialize the
-			# rotation vector as such.
-			self.current[0] = 1 + j*2;
-			level = 1;
-			self.number = j + 1;
-			rotation = [0]*2*flowerNum;
-			rotation[0] = 1;
-			rotation[self.current[0]] = 1;
-			spot = 0;
-			self.findAllRedGap(rotation,spot,level);	
+    def __init__(*arg):
+        self = arg[0]
+        self.genus = ourGenus
+        if arg[1]:
+            flowerNum = arg[1];
+        if arg[2]:
+            self.genus = arg[2];
+        self.current = [0]*flowerNum;
+        self.current[0] = 1;
+        self.totalCount = 0;
+        self.flowerNum = flowerNum;
+        self.genusCalc = [0]*4*flowerNum;
+        self.minSorted = [];
+        for j in range(0, (flowerNum + 1)/2):
+   	    # This is going to be a smallest to largest gap 
+	    # depth first search. So we will initialize the
+	    # rotation vector as such.
+            self.current[0] = 1 + j*2;
+            level = 1;
+            self.number = j + 1;
+            rotation = [0]*2*flowerNum;
+            rotation[0] = 1;
+            rotation[self.current[0]] = 1;
+            spot = 0;
+            self.findAllRedGap(rotation,spot,level);	
 	# Now we will define a recursive subfunction. We will want 
 	# rotation, and spot to update recursively,
 	# but number, current, and level to update iteratively.
-	def findAllRedGap(self,rotation, spot,level):
-		newrot = rotation[:];
-		if (level == len(self.current)):
-			# We are done, we print the results. To be 
-			# replaced with our main logic.
-#			print self.current;
-			finalTemp = redgaptogap(self.current);
-			if (self.getGenus(finalTemp) == self.genus):
-				self.totalCount += 1;
-				self.minSorted.append(makeProper(finalTemp));
-			return;
-		# Here we will attempt to increment the current level
-		temp = self.current[0];
-		while (newrot[spot] != 0):
-			spot += 1;
-		while ((temp <= self.flowerNum*2 - self.current[0])and(spot + temp < len(newrot))and(newrot[spot+temp] != 0)):
-			temp += 2;
-		if (temp + spot < len(newrot)): 
-			newrot[spot] = 1;
-			newrot[spot + temp] = 1;
-			self.number = 1;
-			self.current[level] = temp;
-			level += 1;
-			self.findAllRedGap(newrot,spot,level);
-		else :
-			return;	
-		for i in range(0,len(self.current) - level):
-			# Here we will attempt to increment number
-			if (level + self.number - 1 == len(self.current)):
-				self.number = 1;
-				return;
-			temp = self.current[level - 1] + 2;
-			self.number += 1;
-			newrot[spot + self.current[level - 1]] = 0;
-			while (spot + temp < len(newrot))and(newrot[spot + temp] != 0):
-				temp += 2;
-			if (spot + temp < len(newrot)):
-				self.current[level - 1] = temp;
-				newrot[spot + temp] = 1;
-				self.findAllRedGap(newrot,spot,level);
-			else:
-				return;
+        def findAllRedGap(self,rotation, spot,level):
+            newrot = rotation[:];
+            if (level == len(self.current)):
+                # We are done, we print the results. To be 
+                # replaced with our main logic.
+                #print self.current;
+                finalTemp = redgaptogap(self.current);
+                if (self.getGenus(finalTemp) == self.genus):
+                    self.totalCount += 1;
+                    self.minSorted.append(makeProper(finalTemp));
+                    return;
+            # Here we will attempt to increment the current level
+            temp = self.current[0];
+            while (newrot[spot] != 0):
+                spot += 1;
+            while ((temp <= self.flowerNum*2 - self.current[0])and(spot + temp < len(newrot))and(newrot[spot+temp] != 0)):
+                temp += 2;
+            if (temp + spot < len(newrot)): 
+                newrot[spot] = 1;
+                newrot[spot + temp] = 1;
+                self.number = 1;
+                self.current[level] = temp;
+                level += 1;
+                self.findAllRedGap(newrot,spot,level);
+            else :
+                return;	
+            for i in range(0,len(self.current) - level):
+                # Here we will attempt to increment number
+                if (level + self.number - 1 == len(self.current)):
+                    self.number = 1;
+                    return;
+                temp = self.current[level - 1] + 2;
+                self.number += 1;
+                newrot[spot + self.current[level - 1]] = 0;
+            while (spot + temp < len(newrot))and(newrot[spot + temp] != 0):
+                temp += 2;
+                if (spot + temp < len(newrot)):
+                    self.current[level - 1] = temp;
+                    newrot[spot + temp] = 1;
+                    self.findAllRedGap(newrot,spot,level);
+                else:
+                    return;
 
-	# converts a Gap sequence to a long in base 2*flowernumber. This is to
-	# facilitate the sorting mechanism. We will try this for now, if this doesn't
-	# work, we will make our very own indexed list data structure.
-	
+    # converts a Gap sequence to a long in base 2*flowernumber. This is to
+    # facilitate the sorting mechanism. We will try this for now, if this doesn't
+    # work, we will make our very own indexed list data structure.
+    # Sorts the results and removes duplicates
+    def sortResults(self):
+        newResults = [];
+        self.minSorted = sorted(self.minSorted);
+        for i in range(0,len(self.minSorted)):
+            if (i == len(self.minSorted) - 1) or (cmp(self.minSorted[i],self.minSorted[i+1]) != 0):
+                newResults.append(self.minSorted[i]);
+            self.minSorted = newResults;
 
-	
-	# Sorts the results and removes duplicates
-	def sortResults(self):
-		newResults = [];
-		self.minSorted = sorted(self.minSorted);
-		for i in range(0,len(self.minSorted)):
-			if (i == len(self.minSorted) - 1) or (cmp(self.minSorted[i],self.minSorted[i+1]) != 0):
-				newResults.append(self.minSorted[i]);
-		self.minSorted = newResults;
-
-
-	def getGenus(self, gapSeq):
-		genus = 0;
-		current = 1;
-		for k in range(0,self.flowerNum*4):
-			if ( k % 2 == 0):
-				self.genusCalc[k] = gapSeq[k/2];
-			else :
-				self.genusCalc[k] = 0;
-		while current < 4*self.flowerNum:
-                        cycle = current;
-			while self.genusCalc[cycle] == 0:
-				self.genusCalc[cycle] = 1;
-				cycle = (cycle + (self.genusCalc[(cycle+1)%(4*self.flowerNum)]+1)*2)%(4*self.flowerNum);
-			genus += 1;
-			while (current < 4*self.flowerNum) and (self.genusCalc[current] != 0):
-				current += 2;
-#		print (self.flowerNum - 1 + genus)/2-1;
-		return (self.flowerNum - 1 + genus)/2 -1;	
+    def getGenus(self, gapSeq):
+        genus = 0;
+        current = 1;
+        for k in range(0,self.flowerNum*4):
+            if ( k % 2 == 0):
+                self.genusCalc[k] = gapSeq[k/2];
+            else :
+                self.genusCalc[k] = 0;
+            while current < 4*self.flowerNum:
+                cycle = current;
+                while self.genusCalc[cycle] == 0:
+                    self.genusCalc[cycle] = 1;
+                    cycle = (cycle + (self.genusCalc[(cycle+1)%(4*self.flowerNum)]+1)*2)%(4*self.flowerNum);
+                genus += 1;
+                while (current < 4*self.flowerNum) and (self.genusCalc[current] != 0):
+                    current += 2;
+        return (self.flowerNum - 1 + genus)/2 -1;	
 
 
 			
 	
 input = [0,2,3,0,5,3,2,4,4,5];
-print "Proper";
+print("Proper");
 makeProper(input);
-print "rotation to gap";
+print("rotation to gap");
 rottogap(input);
-print "rotation to reduced gap";
+print("rotation to reduced gap");
 rottoredgap(input);
-print "rotation to gap to reduced gap";
+print("rotation to gap to reduced gap");
 gaptoredgap(rottogap(input));
-print "rotation to gap to proper to rotation";
+print("rotation to gap to proper to rotation");
 gaptorot(makeProper(rottogap(input)));
-print "rotation to reduced gap to rotation";
+print("rotation to reduced gap to rotation");
 redgaptorot(rottoredgap(input));
-print "rotation to reduced gap to gap to rotation";
+print("rotation to reduced gap to gap to rotation");
 gaptorot(redgaptogap(rottoredgap(input)));
-print "Starting chaos:";
+print("Starting chaos:");
 #myFlower = AllRots(12);
 #myFlower.sortResults();
 #print len(myFlower.minSorted);

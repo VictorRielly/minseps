@@ -3,7 +3,7 @@
 # from the flowers as well as a package that allows us
 # to efficiently compute graph isomorphisms
 import allFlowers as flow
-import igraph as igraph
+import jgraph as igraph
 import numpy as np
 from copy import deepcopy as copy
 # This code will generate a structure holding all rotation systems
